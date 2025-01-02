@@ -10,7 +10,8 @@ defaults:
 
   - /habitat/dataset/rearrangement: hssd
 
-  - /habitat/task/actions@habitat.task.actions.agent_0_arm_action: oracle_arm_action
+  - /habitat/task/actions@habitat.task.actions.agent_0_arm_pick_action: arm_pick_action
+  - /habitat/task/actions@habitat.task.actions.agent_0_arm_place_action: arm_place_action
   - /habitat/task/actions@habitat.task.actions.agent_0_base_velocity: base_velocity_non_cylinder
   # - /habitat/task/actions@habitat.task.actions.agent_0_base_velocity: base_velocity
   # - /habitat/task/actions@habitat.task.actions.agent_0_base_velocity_non_cylinder: base_velocity_non_cylinder
