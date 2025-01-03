@@ -122,13 +122,7 @@ python -u -m habitat_baselines.run \
 
 ### Run Habitat-MAS
 
-To run our episodes in Habitat-MAS, you should first:
-
-- download the high-level configuration files from [here](https://drive.google.com/drive/folders/1DR-WErfJLqmZuOCp1UUQ9T-scp8JdgPN), and place them into the `habitat-baselines/habitat_baselines/config` folder.
-- download the simulator-level configuration files from [here](https://drive.google.com/drive/folders/1ovNky8ZzQVnVf_FyFaergRl3Qp94PWMz), and place them into the `habitat-lab/habitat/config/benchmark` folder.
-- download the dataset configuration files from [here](https://drive.google.com/drive/folders/1bOM9aXEiifp-QL4w0GVj5qrGiU5ex0SI), and place them into the `habitat-lab/habitat/config/habitat/dataset`
-
-Then, you need to set your API key in [`habitat-mas/habitat_mas/utils/models.py`](https://github.com/SgtVincent/EMOS/blob/8f4348d73fcf605ebfbeee13ff897359723b5f1c/habitat-mas/habitat_mas/utils/models.py) to run EMOS.
+To run our episodes in Habitat-MAS, you should first set your API key in [`habitat-mas/habitat_mas/utils/models.py`](https://github.com/SgtVincent/EMOS/blob/8f4348d73fcf605ebfbeee13ff897359723b5f1c/habitat-mas/habitat_mas/utils/models.py) to run EMOS.
 
 For each task, you could run the following command:
 
