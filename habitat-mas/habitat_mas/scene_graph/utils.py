@@ -190,6 +190,8 @@ def generate_objects_description(sim, object_layer):
             obj_name = obj.label
         if obj.full_name is None:
             obj_name = "any_targets|" + str(obj_id)
+        else:
+            obj_name = obj.full_name
         
         position = np.array(obj.center)
         # Remove quotes in list 

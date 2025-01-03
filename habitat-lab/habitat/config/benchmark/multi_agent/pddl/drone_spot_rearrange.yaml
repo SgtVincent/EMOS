@@ -1,5 +1,5 @@
-# The rearrangement task with robot_1 perceives the target object first.
-# Make sure the robot_0 is spot and the robot_1 is drone.
+# The rearrangement task with agent_1 perceives the target object first.
+# Make sure the agent_0 is spot and the agent_1 is drone.
 objects:
   - name: any_targets|0
     expr_type: movable_entity_type
@@ -7,36 +7,36 @@ objects:
     expr_type: movable_entity_type
   - name: TARGET_any_targets|0
     expr_type: goal_entity_type
-  - name: robot_0
+  - name: agent_0
     expr_type: robot_entity_type
-  - name: robot_1
+  - name: agent_1
     expr_type: robot_entity_type
 
 goal:
   expr_type: AND
   sub_exprs:
     - at(any_targets|0,TARGET_any_targets|0)
-    - not_holding(robot_0)
-    - not_holding(robot_1)
+    - not_holding(agent_0)
+    - not_holding(agent_1)
 
 stage_goals:
   stage_1:
     expr_type: AND
     sub_exprs:
-      - robot_at(any_targets|0, robot_1)
+      - robot_at(any_targets|0, agent_1)
   stage_2:
     expr_type: AND
     sub_exprs:
-      - holding(any_targets|0, robot_0)
+      - holding(any_targets|0, agent_0)
   stage_3:
     expr_type: AND
     sub_exprs:
       - at(any_targets|0, TARGET_any_targets|0)
 
 solution:
-  # - nav_to_obj(TARGET_any_targets|0, robot_0)
-  - nav_to_goal(any_targets|0, robot_1)
-  - nav_to_goal(any_targets|0, robot_0)
-  - pick(any_targets|0, robot_0)
-  - nav_to_obj(TARGET_any_targets|0, robot_0)
-  - place(any_targets|0,TARGET_any_targets|0, robot_0)
+  # - nav_to_obj(TARGET_any_targets|0, agent_0)
+  - nav_to_goal(any_targets|0, agent_1)
+  - nav_to_goal(any_targets|0, agent_0)
+  - pick(any_targets|0, agent_0)
+  - nav_to_obj(TARGET_any_targets|0, agent_0)
+  - place(any_targets|0,TARGET_any_targets|0, agent_0)

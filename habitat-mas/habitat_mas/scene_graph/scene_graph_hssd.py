@@ -90,8 +90,8 @@ class SceneGraphHSSD(SceneGraphBase):
         target_trans = self.sim._get_target_trans()
         if len(target_trans):
             targets = {}
-            for target_id, trans in target_trans:
-                targets[target_id]  = trans
+            for id, (target_id, trans) in enumerate(target_trans):
+                targets[id] = trans
 
             if self.sim.ep_info.goal_receptacles and len(self.sim.ep_info.goal_receptacles):
                 for target_id, goal_recep in enumerate(self.sim.ep_info.goal_receptacles):

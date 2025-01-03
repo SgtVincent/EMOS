@@ -8,8 +8,8 @@ defaults:
     - add_virtual_keys_base
   - /habitat_baselines/rl/policy/obs_transforms@habitat_baselines.rl.policy.agent_1.obs_transforms.add_virtual_keys:
     - add_virtual_keys_base
-  - /habitat_baselines/rl/policy@habitat_baselines.rl.policy.agent_0: hl_llm
-  - /habitat_baselines/rl/policy@habitat_baselines.rl.policy.agent_1: hl_llm
+  - /habitat_baselines/rl/policy@habitat_baselines.rl.policy.agent_0: hl_fixed
+  - /habitat_baselines/rl/policy@habitat_baselines.rl.policy.agent_1: hl_fixed
   - /habitat_baselines/rl/policy/hierarchical_policy/defined_skills@habitat_baselines.rl.policy.agent_0.hierarchical_policy.defined_skills: oracle_skills_multi_agent
   - /habitat_baselines/rl/policy/hierarchical_policy/defined_skills@habitat_baselines.rl.policy.agent_1.hierarchical_policy.defined_skills: oracle_skills_drone_multi_agent
   - /habitat/task/lab_sensors:
@@ -105,19 +105,6 @@ habitat_baselines:
               - pick
               - place
               - nav_to_receptacle_by_name
-          # Override to use the oracle navigation skill (which will actually execute navigation).
-          defined_skills:
-            nav_to_obj:
-              skill_name: "OracleNavPolicy"
-              # action_name: "base_velocity_non_cylinder"
-              action_name: "base_velocity"
-              obs_skill_inputs: ["obj_start_sensor", "abs_obj_start_sensor", "obj_goal_sensor", "abs_obj_goal_sensor"]
-              max_skill_steps: 1500
-            pick: 
-              skill_name: "OraclePickPolicy"
-              action_name: "arm_action"
-              obs_skill_inputs: ["is_holding"]
-              max_skill_steps: 100
 
           ignore_skills:
             - open_cab
@@ -144,14 +131,7 @@ habitat_baselines:
               - nav_to_goal
               - nav_to_obj
               - nav_to_receptacle_by_name
-          # Override to use the oracle navigation skill (which will actually execute navigation).
-          # TODO: add oracle nav policy for drone
-          defined_skills:
-            nav_to_obj:
-              skill_name: "OracleNavPolicy"
-              action_name: "base_velocity"
-              obs_skill_inputs: ["obj_start_sensor", "abs_obj_start_sensor", "obj_goal_sensor", "abs_obj_goal_sensor"]
-              max_skill_steps: 1500
+
     ppo:
       # ppo params
       clip_param: 0.2
