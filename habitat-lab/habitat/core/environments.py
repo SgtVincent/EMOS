@@ -105,6 +105,16 @@ class RLTaskEnv(habitat.RLEnv):
         )
         return self._env.task.get_task_text_context()
 
+    def get_pivot_sim_info(self) -> RearrangeSim:
+        """
+        Get the sim info of the task for pivot.
+        """
+        assert hasattr(self._env.task, "get_pivot_sim_info"), (
+            "The task does not have a get_pivot_sim_info method. "
+            "Please implement this method in the task class."
+        )
+        return self._env.task.get_pivot_sim_info()
+
 
 @habitat.registry.register_env(name="GymRegistryEnv")
 class GymRegistryEnv(gym.Wrapper):

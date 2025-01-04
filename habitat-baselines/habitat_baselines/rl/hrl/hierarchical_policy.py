@@ -734,6 +734,10 @@ class HierarchicalPolicy(nn.Module, Policy):
             agent_name=agent_name,
         )
 
+    def pivot(self, observations, **kwargs):
+        # Add PIVOT prompting
+        return self._high_level_policy.pivot(observations, **kwargs)
+
 
 def _write_tensor_batched(
     source_tensor: torch.Tensor,

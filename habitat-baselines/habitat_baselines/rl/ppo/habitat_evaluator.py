@@ -136,6 +136,14 @@ class HabitatEvaluator(Evaluator):
 
             # If all prev_actions are zero, meaning this is the start of an episode
             # Then collect the context of the episode
+
+            # Add pivot
+            use_pivot = False
+            if use_pivot:
+                pivot_sim_info = envs.call(["get_pivot_sim_info"] * envs.num_envs)
+            else:
+                pivot_sim_info = {}
+
             if current_episodes_info[0].episode_id != cur_ep_id:
                 cur_ep_id = current_episodes_info[0].episode_id
                 envs_text_context = envs.call(["get_task_text_context"] * envs.num_envs)
@@ -151,6 +159,13 @@ class HabitatEvaluator(Evaluator):
                 space_lengths = {
                     "index_len_recurrent_hidden_states": hidden_state_lens,
                     "index_len_prev_actions": action_space_lens,
+                    "pivot_sim_info": pivot_sim_info,
+                    "use_pivot": use_pivot,
+                }
+            else:
+                space_lengths = {
+                    "pivot_sim_info": pivot_sim_info,
+                    "use_pivot": use_pivot,
                 }
             ep_info = [int(cur_ep_id),dataset_info]
             agent_0_depth_info = batch["depth_obs"].cpu()
@@ -208,6 +223,11 @@ class HabitatEvaluator(Evaluator):
             observations, rewards_l, dones, infos = [
                 list(x) for x in zip(*outputs)
             ]
+
+            # Add Pivot prompting to observation
+            # if space_lengths['use_pivot']:
+            #     observations[0]['pivot'] = (agent.actor_critic.pivot(observations, **space_lengths))
+
             # Note that `policy_infos` represents the information about the
             # action BEFORE `observations` (the action used to transition to
             # `observations`).
