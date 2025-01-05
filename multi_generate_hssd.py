@@ -2,6 +2,7 @@ import os
 import multiprocessing
 import subprocess
 import time
+import argparse
 from tqdm import tqdm
 from threading import Timer
 import gc
@@ -47,6 +48,8 @@ def run_episode_generator(args):
     log_file = f"./log/sample/{data_name}.log"
     # with open(log_file, "w") as f:
     subprocess.run(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    # with open(log_file, 'w') as log:
+    #     subprocess.run(command, stdout=log, stderr=log)
     time.sleep(0.9)
 def get_numbers_from_filenames(directory):
     numbers = []
@@ -56,15 +59,35 @@ def get_numbers_from_filenames(directory):
             number = filename.split('.scene_instance')[0]
             numbers.append(number)
     return numbers
-
+def extract_keys_from_txt(file_path):
+    keys = []
+    with open(file_path, 'r') as file:
+        for line in file:
+            line = line.strip()
+            if not line or not line.startswith('(') or not line.endswith(')'):
+                continue
+            try:
+                content = line[1:-1].split(',', 1)
+                key = content[0].strip().strip("'")
+                keys.append(key)
+            except Exception as e:
+                print(f"Error processing line: {line}, Error: {e}")
+    return keys
 if __name__ == '__main__':
-    sum_episode = 200
+    sum_episode = 400
     process_num = 50
     batch_num = 4
-    gpu_num = 6
+    parser = argparse.ArgumentParser(description="Setup dataset and log paths.")
+    parser.add_argument('--start_dir', type=int, required=True, help='Start')
+    parser.add_argument('--end_dir', type=int, required=True, help='End')
+    parser.add_argument('--gpu_num', type=int, default=5)
+    args = parser.parse_args()
+    start_dir = args.start_dir
+    end_dir = args.end_dir
+    gpu_num = args.gpu_num
     num = int(sum_episode / batch_num)
-    yaml_dir = "./new_scene_dir"
-    output_dir = 'hssd_scene_filter_test'
+    yaml_dir = "./allycb_dir"
+    output_dir = 'hssd_scene_allycb_train_2'
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     zip_files = [f"data_{i}" for i in range(0,int(sum_episode/batch_num))]
@@ -78,29 +101,35 @@ if __name__ == '__main__':
     #this is 5 test unseen scene sampling
     # scene_sample = ["104862384_172226319","106878960_174887073","108736851_177263586","108736824_177263559","107734254_176000121"]
     #sample all!
-    scene_config_directory_path = 'data/scene_datasets/hssd-hab/scenes'
-    scene_sample = get_numbers_from_filenames(scene_config_directory_path)
-    scene_sample = sorted(scene_sample)
-    print("before_filer_scene_sample_len:",len(scene_sample))
-    # scene_sample = scene_sample[140:160]
-    # 读取文件中的字符串
-    with open('scene_have_sampled/data_1203.txt', 'r') as file:
-        file_strings = set(line.strip() for line in file)
-    filtered_scene_sample = [s for s in scene_sample if s not in file_strings]
-    #移除重合的
-    scene_sample = filtered_scene_sample
-    print("scene_sample_len:",len(scene_sample))
-    scene_sample = scene_sample[15:40]
-    timeout = 900
+    # scene_config_directory_path = 'data/scene_datasets/hssd-hab/scenes'
+    # scene_sample = get_numbers_from_filenames(scene_config_directory_path)
+    # scene_sample = sorted(scene_sample)
+    # print("before_filer_scene_sample_len:",len(scene_sample))
+    # # scene_sample = scene_sample[140:160]
+    # # 读取文件中的字符串
+    # with open('scene_have_sampled/data_1203.txt', 'r') as file:
+    #     file_strings = set(line.strip() for line in file)
+    # filtered_scene_sample = [s for s in scene_sample if s not in file_strings]
+    # #移除重合的
+    # scene_sample = filtered_scene_sample
+    # print("scene_sample_len:",len(scene_sample))
+    # scene_sample = scene_sample[15:40]
+    #if you want to filter from all the scene,do the thing up.
+    timeout = 1800
+    
+# 示例用法
+    file_path = 'train_id.txt'  # 替换为您的文件路径
+    keys = extract_keys_from_txt(file_path)
     log_path = "./log/sample"
+    scene_sample = keys[start_dir:end_dir]
     os.makedirs(log_path,exist_ok=True)
     memory_threshold = 450976
-    for item in scene_sample:
+    for a,item in enumerate(scene_sample):
         if not os.path.exists(os.path.join(output_dir, item)):
             os.makedirs(os.path.join(output_dir, item))
         start_time = time.time()
         check_memory_usage(memory_threshold)
-        print(f"START--{item}")
+        print(f"START--{item}//i---{str(a)}")
         with multiprocessing.Pool(processes=process_num) as pool:
             args = [(f"data_{i}",int(i%gpu_num),item,yaml_dir,output_dir) for i in range(0,int(sum_episode/batch_num))]
             results = []

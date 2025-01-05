@@ -14,7 +14,7 @@ defaults:
     - all_predicates
   - _self_
 
-
+habitat.simulator.habitat_sim_v0.gpu_device_id: 0
 habitat_baselines:
   verbose: False
   trainer_name: "ddppo"

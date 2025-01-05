@@ -1855,7 +1855,6 @@ class DetectedObjectsSensor(UsesArticulatedAgentInterface, Sensor):
         """ Get the detected objects from the semantic sensor data """
         
         observation_keys = list(observations.keys())
-        
         # Retrieve the semantic sensor data
         if self.agent_id is None:
             target_keys = [key for key in observation_keys if "semantic" in key]
@@ -1879,7 +1878,9 @@ class DetectedObjectsSensor(UsesArticulatedAgentInterface, Sensor):
         
         # Concatenate all detected objects from all sensors
         detected_objects = np.unique(np.concatenate(list(sensor_detected_objects.values())))
-        
+        if self.agent_id == 0:
+            print("sensor_detected_objects:",sensor_detected_objects)
+            print("detected:",np.unique(np.concatenate(list(sensor_detected_objects.values()))))
         return detected_objects
     
 

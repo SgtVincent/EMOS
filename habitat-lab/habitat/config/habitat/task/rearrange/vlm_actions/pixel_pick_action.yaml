@@ -7,5 +7,5 @@ defaults:
 type: ArmPickAction
 arm_controller: PixelArmAction
 grip_controller: MagicGraspAction
-grasp_thresh_dist: 0.5
+grasp_thresh_dist: 0.15
 render_ee_target: True

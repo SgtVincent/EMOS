@@ -781,12 +781,13 @@ class ArmWorkspaceRGBSensor(UsesArticulatedAgentInterface, Sensor):
             rgb_obs = observations[self.rgb_sensor_name]
             depth_camera_name = self.depth_sensor_name
             semantic_camera_name = f"head_semantic"
-        wait_flag = self._task.actions["wait"].skill_done
+        if self.single_agent_eval_option:
+            wait_flag = self._task.actions["wait"].skill_done
         # assert wait_flag is bool, "wait_flag is not bool"
-        if not (not self.pre_wait and wait_flag) and self.single_agent_eval_option:
+            if not (not self.pre_wait and wait_flag):
+                self.pre_wait = wait_flag
+                return np.array([0],dtype=np.int8)
             self.pre_wait = wait_flag
-            return np.array([0],dtype=np.int8)
-        self.pre_wait = wait_flag
         
         rgb_obs = np.ascontiguousarray(rgb_obs)
         depth_obs = np.ascontiguousarray(depth_obs)

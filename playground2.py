@@ -67,3 +67,20 @@ import shutil
 # directory_path = 'data/scene_datasets/hssd-hab/scenes'
 # numbers_list = get_numbers_from_filenames(directory_path)
 # print(numbers_list)
+# need_name = ["DATASET_filter_train","DLC_train18_dataset","DLC_train40_dataset"]
+# folder_paths = [os.path.join('./', folder) 
+#                 for folder in os.listdir('./') if (os.path.isdir(os.path.join('./', folder)) and any(name in folder for name in need_name))]
+# print(sorted(folder_paths))
+# sample_scene_dir_path = os.path.join('data/datasets','hssd_scene_1220')
+# sample_scene_dir = []
+# for entry in os.scandir(sample_scene_dir_path):
+#     if entry.is_dir():
+#         sample_scene_dir.append(os.path.basename(entry.path))
+# sample_scene_dir = sorted(sample_scene_dir)
+# print(len(sample_scene_dir))
+
+import torch
+
+num_gpus = torch.cuda.device_count()
+for i in range(num_gpus):
+    print(torch.cuda.get_device_name(i))

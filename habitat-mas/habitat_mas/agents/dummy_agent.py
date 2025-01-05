@@ -8,9 +8,12 @@ import requests
 import time,random
 from PIL import Image
 from io import BytesIO
+# import openai
 from openai import OpenAI
 from torchvision import transforms
 import torch
+# API_KEY_NOW = "sk-EhvpORqZk2TCWk0xnBWXr8Lj3GCVQ7wr5pTJM2vXXaeHevCa"
+# API_ENDPOINT_NOW = "https://open.xiaojingai.com/v1/"
 json_format_info = {
     "reasoning":"Based on the current image information and history, think and infer the actions that need to be executed and action's information.",
     "action":"The action name of your reasoning result.",
@@ -110,7 +113,7 @@ class DummyAgentSingle:
     def get_episode_prompt(self,data_path):
         data_dir_path = os.path.dirname(data_path)
         data_dir_num = os.path.basename(data_dir_path)
-        prompt_json_path = os.path.join(os.path.dirname(data_dir_path),'test.json')
+        prompt_json_path = os.path.join(os.path.dirname(data_dir_path),'task_prompt.json')
         with open(prompt_json_path, 'r') as file:
             data = json.load(file)
         task_description = next((item["task_description"] for item in data if item["image_number"] == str(data_dir_num)), None)
@@ -136,7 +139,21 @@ If you can not find the target you need to identify,you should find the frame th
 Robot's current view is: Image-9:{image_token_pad}.If you can find the position that you should navigate to, pick or place,you should output your action information.In robot's current view, some green points may appear,indicating the positions that the robot's arm can reach. When there are green points on the object that needs to be picked, it means the robot's arm can pick up the object. When there are enough green points on the goal container where the object needs to be placed, it means the robot's arm can place the object into the goal container.
 Besides,you need to explain why you choose this action in your output and summarize by combining your chosen action with historical information.
 Robot's Task: {task_prompt}{robot_history}Your output format should be in pure JSON format as follow:{json_format_info}."""
-        return question_prompt_align_with_ovmm
+        question_prompt_align_with_ovmm_no_green_point =f"""You are an AI visual assistant that can manage a single robot. You receive the robot's task,one image representing the robot's current view and eight frames of the scene from the robot's tour. You need to output the robot's next action. Actions the robot can perform are "search_scene_frame","nav_to_point","pick" and "place".
+These frames are from the robot's tour of the scene:
+Image-1:{image_token_pad}
+Image-2:{image_token_pad}
+Image-3:{image_token_pad}
+Image-4:{image_token_pad}
+Image-5:{image_token_pad}
+Image-6:{image_token_pad}
+Image-7:{image_token_pad}
+Image-8:{image_token_pad}
+If you can not find the target you need to identify,you should find the frame that the robot should navigate to complete the task,and output "search_scene_frame" action and the id of frame.
+Robot's current view is: Image-9:{image_token_pad}.If you can find the position that you should navigate to, pick or place,you should output your action information.
+Besides,you need to explain why you choose this action in your output and summarize by combining your chosen action with historical information.
+Robot's Task: {task_prompt}{robot_history}Your output format should be in pure JSON format as follow:{json_format_info}."""
+        return question_prompt_align_with_ovmm  #REMEMBER to match the gp setting!!!!!
     def process_message(self,data_path,robot_image,prompt): #sr:send&receive
         content = [
             {
@@ -171,6 +188,7 @@ Robot's Task: {task_prompt}{robot_history}Your output format should be in pure J
         return content,rag_image_path_list
     def query_and_receive(self,content,client):
         model_name = client.models.list().data[0].id
+        #this is for internvl
         response = client.chat.completions.create(
             model=model_name,
             messages=[{
@@ -179,6 +197,17 @@ Robot's Task: {task_prompt}{robot_history}Your output format should be in pure J
             }],
             temperature=0.0,
             top_p=0.5)
+        # openai.api_key = API_KEY_NOW
+        # openai.base_url = API_ENDPOINT_NOW
+        # response = openai.chat.completions.create(  #this is for openai
+        #     model="gpt-4o",
+        #     messages=[{
+        #         'role':'user',
+        #         'content': content
+        #     }],
+        #     temperature=0.0,
+        #     top_p=0.5)
+        # print("response:",response)
         return response
     def process_nav_point(self,depth_obs, depth_rot,depth_trans,pixel_xy):
         pixel_x, pixel_y = pixel_xy
@@ -265,7 +294,8 @@ Robot's Task: {task_prompt}{robot_history}Your output format should be in pure J
             return self.prepare_action[2-action_num]
         self.prepare_action_num = 2
         #this is for action cycle(ensure reset&wait before and action)
-        robot_image = observations["arm_workspace_rgb"].cpu().numpy()
+        robot_image = observations["arm_workspace_rgb"].cpu().numpy()                     ##now is !!!!head_rgb
+        # robot_image = observations["head_rgb"].cpu().numpy()
         # save_image(np.squeeze(robot_image.copy()),f"./eval_in_sim_info/{os.path.basename(os.path.dirname(data_path))}/robot_input_{self.rgb_image_store_num}.png")
         # print("robot_image:",robot_image.shape)
         self.rgb_image_store_num+=1

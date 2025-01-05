@@ -403,7 +403,8 @@ def generate_episode_image_from_store_dict(args):
     env = Env(config=config)
     dataset = env._dataset
     metadata = []
-    obs_keys = args.obs_keys
+    # obs_keys = args.obs_keys
+    obs_keys = ["head_rgb","arm_workspace_rgb"]
     sample_info = json.loads(args.sample_info)
     # print("sample_info:",sample_info)
     output_dir = args.output_dir
@@ -457,17 +458,17 @@ def generate_episode_image_from_store_dict(args):
                 if obs_key in observations:
                     image = observations[obs_key]
                     image_file_name = (
-                        f"{frame_num}_agent_0_head_rgbFetchRobot_head_rgb.png"
+                        f"{frame_num}_agent_0_rgbFetchRobot_{obs_key}.png"
                     )
                     image_file_path = os.path.join(
                         episode_dir, image_file_name
                     )
                     save_image(image, image_file_path)
                 # print("key:",key)
-            print(
-                "observations['arm_workspace_points']:",
-                observations["arm_workspace_points"],
-            )
+            # print(
+            #     "observations['arm_workspace_points']:",
+            #     observations["arm_workspace_points"],
+            # )
             try:
                 metadata.append(
                     {

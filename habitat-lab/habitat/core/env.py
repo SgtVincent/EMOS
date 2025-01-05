@@ -301,39 +301,39 @@ class Env:
         print(f"Episode ID: {episode_data['episode_id']}, Num Steps: {episode_data['num_steps']}")
         print("===================================================================")
         print("self._config.dataset.data_path:",self._config.dataset.data_path)
-        dataset_name = self._config.dataset.data_path.split("/")[-1]
-        ablation_mode = ABLATION_MODE[
-            (
-                self._config.dataset.should_group_discussion,
-                self._config.dataset.should_agent_reflection,
-                self._config.dataset.should_robot_resume,
-                self._config.dataset.should_numerical
-            )
-        ]
-        log_dir_path = os.path.join("./episode_log", dataset_name, ablation_mode)
-        log_file_path = os.path.join(log_dir_path, f"{dataset_name}_steps_log.json")
-        subgoal_file_path = os.path.join(log_dir_path, f"{dataset_name}_subgoals.json")
+        # dataset_name = self._config.dataset.data_path.split("/")[-1]
+        # ablation_mode = ABLATION_MODE[
+        #     (
+        #         self._config.dataset.should_group_discussion,
+        #         self._config.dataset.should_agent_reflection,
+        #         self._config.dataset.should_robot_resume,
+        #         self._config.dataset.should_numerical
+        #     )
+        # ]
+        # log_dir_path = os.path.join("./episode_log", dataset_name, ablation_mode)
+        # log_file_path = os.path.join(log_dir_path, f"{dataset_name}_steps_log.json")
+        # subgoal_file_path = os.path.join(log_dir_path, f"{dataset_name}_subgoals.json")
 
-        if not os.path.exists(log_dir_path):
-            os.makedirs(log_dir_path)
-            with open(log_file_path, 'w') as f:
-                json.dump({}, f)
-            with open(subgoal_file_path, 'w') as f:
-                json.dump({}, f)
+        # if not os.path.exists(log_dir_path):
+        #     os.makedirs(log_dir_path)
+        #     with open(log_file_path, 'w') as f:
+        #         json.dump({}, f)
+        #     with open(subgoal_file_path, 'w') as f:
+        #         json.dump({}, f)
 
-        with open(log_file_path, 'r') as f:
-            log_data = json.load(f)
-        with open(subgoal_file_path, 'r') as f:
-            subgoal_data = json.load(f)
+        # with open(log_file_path, 'r') as f:
+        #     log_data = json.load(f)
+        # with open(subgoal_file_path, 'r') as f:
+        #     subgoal_data = json.load(f)
         
-        log_data[f"episode_id: {episode_data['episode_id']}"] = f"num_steps: {episode_data['num_steps']}"
-        stage_goal = self._task.measurements.measures['pddl_stage_goals'].get_metric()
-        subgoal_data[f"episode_id: {episode_data['episode_id']}"] = stage_goal
-        with open(subgoal_file_path, 'w') as f:
-            json.dump(subgoal_data, f, indent=4)
+        # log_data[f"episode_id: {episode_data['episode_id']}"] = f"num_steps: {episode_data['num_steps']}"
+        # stage_goal = self._task.measurements.measures['pddl_stage_goals'].get_metric()
+        # subgoal_data[f"episode_id: {episode_data['episode_id']}"] = stage_goal
+        # with open(subgoal_file_path, 'w') as f:
+        #     json.dump(subgoal_data, f, indent=4)
 
-        with open(log_file_path, 'w') as f:
-            json.dump(log_data, f, indent=4)
+        # with open(log_file_path, 'w') as f:
+        #     json.dump(log_data, f, indent=4)
 
     def step(
         self, action: Union[int, str, Dict[str, Any]], **kwargs
