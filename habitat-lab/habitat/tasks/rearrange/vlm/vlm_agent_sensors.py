@@ -433,8 +433,6 @@ class DepthRotSensor(UsesArticulatedAgentInterface, Sensor):
         depth_rotation = np.array(depth_camera.camera_matrix.rotation())
         # print("test_rot:",depth_rotation,flush = True)
         return depth_rotation
-
-
 @registry.register_sensor
 class DepthTransSensor(UsesArticulatedAgentInterface, Sensor):
     cls_uuid: str = "depth_trans"
@@ -489,8 +487,86 @@ class DepthTransSensor(UsesArticulatedAgentInterface, Sensor):
         depth_translation = np.array(depth_camera.camera_matrix.translation)
         # print("test_trans:",depth_translation,flush = True)
         return depth_translation
+@registry.register_sensor
+class DepthProjectionSensor(UsesArticulatedAgentInterface, Sensor):
+    cls_uuid: str = "depth_project"
+    def __init__(self, sim, config, *args, **kwargs):
+        self._sim = sim
+        self.depth_sensor_name = config.get("depth_sensor_name", "head_depth")
 
+        super().__init__(config=config)
 
+    def _get_uuid(self, *args, **kwargs):
+        # return f"agent_{self.agent_idx}_{ArmWorkspaceRGBSensor.cls_uuid}"
+        return DepthProjectionSensor.cls_uuid
+
+    def _get_sensor_type(self, *args, **kwargs):
+        return SensorTypes.COLOR
+
+    def _get_observation_space(self, *args, config, **kwargs):
+        return spaces.Box(low=-np.inf, high=np.inf, shape=(4, 4), dtype=np.float32)
+
+    def get_observation(self, observations, *args, **kwargs):
+        if self.agent_id is not None:
+            depth_obs = observations[
+                f"agent_{self.agent_id}_{self.depth_sensor_name}"
+            ]
+            # rgb_obs = observations[f"agent_{self.agent_id}_{self.rgb_sensor_name}"]
+            depth_camera_name = (
+                f"agent_{self.agent_id}_{self.depth_sensor_name}"
+            )
+        else:
+            depth_obs = observations[self.depth_sensor_name]
+            depth_camera_name = self.depth_sensor_name
+        depth_camera = self._sim._sensors[
+            depth_camera_name
+        ]._sensor_object.render_camera
+        depth_projection_ = np.array(depth_camera.projection_matrix)
+        depth_projection = [[0.0] * 4 for _ in range(4)]
+        for i in range(4):
+            for j in range(4):
+                depth_projection[i][j] = depth_projection_[i][j]
+        return depth_projection
+@registry.register_sensor
+class CameraMatrixSensor(UsesArticulatedAgentInterface, Sensor):
+    cls_uuid: str = "camera_matrix"
+    def __init__(self, sim, config, *args, **kwargs):
+        self._sim = sim
+        self.depth_sensor_name = config.get("depth_sensor_name", "head_depth")
+
+        super().__init__(config=config)
+
+    def _get_uuid(self, *args, **kwargs):
+        # return f"agent_{self.agent_idx}_{ArmWorkspaceRGBSensor.cls_uuid}"
+        return CameraMatrixSensor.cls_uuid
+
+    def _get_sensor_type(self, *args, **kwargs):
+        return SensorTypes.COLOR
+
+    def _get_observation_space(self, *args, config, **kwargs):
+        return spaces.Box(low=-np.inf, high=np.inf, shape=(4, 4), dtype=np.float32)
+
+    def get_observation(self, observations, *args, **kwargs):
+        if self.agent_id is not None:
+            depth_obs = observations[
+                f"agent_{self.agent_id}_{self.depth_sensor_name}"
+            ]
+            # rgb_obs = observations[f"agent_{self.agent_id}_{self.rgb_sensor_name}"]
+            depth_camera_name = (
+                f"agent_{self.agent_id}_{self.depth_sensor_name}"
+            )
+        else:
+            depth_obs = observations[self.depth_sensor_name]
+            depth_camera_name = self.depth_sensor_name
+        depth_camera = self._sim._sensors[
+            depth_camera_name
+        ]._sensor_object.render_camera
+        camera_matrix_ = depth_camera.camera_matrix
+        camera_matrix = [[0.0] * 4 for _ in range(4)]
+        for i in range(4):
+            for j in range(4):
+                camera_matrix[i][j] = camera_matrix_[i][j]
+        return camera_matrix
 @registry.register_sensor
 class TargetBBoxSenor(UsesArticulatedAgentInterface, Sensor):
     cls_uuid: str = "target_bounding_box"

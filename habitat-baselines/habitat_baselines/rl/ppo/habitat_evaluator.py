@@ -138,11 +138,11 @@ class HabitatEvaluator(Evaluator):
             # Then collect the context of the episode
 
             # Add pivot
-            use_pivot = False
-            if use_pivot:
-                pivot_sim_info = envs.call(["get_pivot_sim_info"] * envs.num_envs)
-            else:
-                pivot_sim_info = {}
+            use_pivot = config.habitat_baselines.use_pivot
+            # if use_pivot:
+            #     pivot_sim_info = envs.call(["get_pivot_sim_info"] * envs.num_envs)
+            # else:
+            #     pivot_sim_info = {}
 
             if current_episodes_info[0].episode_id != cur_ep_id:
                 cur_ep_id = current_episodes_info[0].episode_id
@@ -155,18 +155,18 @@ class HabitatEvaluator(Evaluator):
                         
             space_lengths = {}
             n_agents = len(config.habitat.simulator.agents)
-            if n_agents > 1:
-                space_lengths = {
-                    "index_len_recurrent_hidden_states": hidden_state_lens,
-                    "index_len_prev_actions": action_space_lens,
-                    "pivot_sim_info": pivot_sim_info,
-                    "use_pivot": use_pivot,
-                }
-            else:
-                space_lengths = {
-                    "pivot_sim_info": pivot_sim_info,
-                    "use_pivot": use_pivot,
-                }
+            # if n_agents > 1:
+            #     space_lengths = {
+            #         "index_len_recurrent_hidden_states": hidden_state_lens,
+            #         "index_len_prev_actions": action_space_lens,
+            #         "pivot_sim_info": pivot_sim_info,
+            #         "use_pivot": use_pivot,
+            #     }
+            # else:
+            #     space_lengths = {
+            #         "pivot_sim_info": pivot_sim_info,
+            #         "use_pivot": use_pivot,
+            #     }
             ep_info = [int(cur_ep_id),dataset_info]
             agent_0_depth_info = batch["depth_obs"].cpu()
                     # print("depthinfoshape:",agent_0_depth_info.shape)

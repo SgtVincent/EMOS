@@ -197,17 +197,6 @@ Robot's Task: {task_prompt}{robot_history}Your output format should be in pure J
             }],
             temperature=0.0,
             top_p=0.5)
-        # openai.api_key = API_KEY_NOW
-        # openai.base_url = API_ENDPOINT_NOW
-        # response = openai.chat.completions.create(  #this is for openai
-        #     model="gpt-4o",
-        #     messages=[{
-        #         'role':'user',
-        #         'content': content
-        #     }],
-        #     temperature=0.0,
-        #     top_p=0.5)
-        # print("response:",response)
         return response
     def process_nav_point(self,depth_obs, depth_rot,depth_trans,pixel_xy):
         pixel_x, pixel_y = pixel_xy

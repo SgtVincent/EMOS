@@ -77,8 +77,8 @@ class PivotPolicy(HighLevelPolicy):
         for batch_idx, should_plan in enumerate(plan_masks):
             if should_plan != 1.0:
                 continue
-            camera_info = json.loads(kwargs['pivot_sim_info'][0]['camera_info'])
-            llm_output = self.llm_agent.vlm_eval_response(observations, data_path, camera_info)
+            # camera_info = json.loads(kwargs['pivot_sim_info'][0]['camera_info'])
+            llm_output = self.llm_agent.vlm_eval_response(observations, data_path)
             if llm_output is None:
                 next_skill[batch_idx] = self._skill_name_to_idx["wait"]
                 skill_args_data[batch_idx] = ["50"]

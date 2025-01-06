@@ -1,7 +1,7 @@
 import os
 import gzip
 import shutil
-
+import numpy as np
 # def unzip_gz_files_in_directory(base_directory):
 #     for root, dirs, files in os.walk(base_directory):
 #         for file in files:
@@ -79,8 +79,47 @@ import shutil
 # sample_scene_dir = sorted(sample_scene_dir)
 # print(len(sample_scene_dir))
 
-import torch
+# import torch
 
-num_gpus = torch.cuda.device_count()
-for i in range(num_gpus):
-    print(torch.cuda.get_device_name(i))
+# num_gpus = torch.cuda.device_count()
+# for i in range(num_gpus):
+#     print(torch.cuda.get_device_name(i))
+# hfov = 1.5707963267948966
+#         # Intrinsic matrix K
+# K = np.array([
+#     [1 / np.tan(hfov / 2.), 0., 0., 0.],
+#     [0., 1 / np.tan(hfov / 2.), 0., 0.],
+#     [0., 0., 1, 0],
+#     [0., 0., 0, 1]
+# ])
+# print(K)
+import json
+import re
+
+def extract_fields(input_string):
+    # 定义正则表达式模式来匹配指定字段的内容
+    pattern = r'["\'](reasoning|action|action_information|summarization)["\']\s*:\s*["\'](.*?)["\'],'
+    
+    # 使用正则表达式查找所有匹配的字段
+    matches = re.findall(pattern, input_string)
+    
+    # 创建一个新的字典来存储提取的字段
+    extracted_data = {field: value for field, value in matches}
+    
+    # 将字典转换为JSON字符串
+    
+    return extracted_data
+
+# # 示例输入字符串
+input_string = '''{
+    "reasoning": "The robot's task is to move the cracker box from the Home library to the Central countertop. Based on the history, the robot was instructed to search frame 6 in the Home library for the cracker box. However, the current image provided (Image-9) does not show the cracker box, and there are no indications or green points suggesting an actionable object or container. Thus, the robot should proceed to search frame 6, as per its previous instruction, to locate the target object.",
+    "action": "search_scene_frame",
+    "action_information": "6",
+    "summarization": "The robot is continuing its task by searching frame 6 in the Home library to locate the cracker box."
+}
+'''
+
+# 调用函数并打印结果
+new_json = extract_fields(input_string)
+# new_json["task_prompt"] = "fuck"
+print(new_json)

@@ -63,7 +63,7 @@ def run_scene_graph_generate(args):
 
 if __name__ == '__main__':
     #!!!!需要重新配置一下zxz_fetch.yaml的lab_sensors和image_filter_list
-    dataset_path = "./sat_DATASET_0101_train_armworkspace_rgb"
+    dataset_path = "./sat_DATASET_0104_train_newgz_armworkspace_rgb"
     parser = argparse.ArgumentParser(description="Setup dataset and log paths.")
     parser.add_argument('--start_dir', type=int, required=True, help='Start')
     parser.add_argument('--end_dir', type=int, required=True, help='End')

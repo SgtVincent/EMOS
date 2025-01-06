@@ -140,7 +140,7 @@ class VisualIterativePrompter:
                 coord = self.action_to_coord(action, image, arm_xy, camera_info)
                 itrs += 1
                 # increase sampling range slightly if not finding a good sample
-                adjusted_scale *= 1.1
+                adjusted_scale = np.float64(adjusted_scale)*1.1
                 if itrs == max_itrs:
                     # If the final iteration results in invalid annotation, just clip to edge of image.
                     coord = self.action_to_coord(action, image, arm_xy, camera_info, do_project=True)

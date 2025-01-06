@@ -5,6 +5,7 @@ from habitat_baselines.rl.hrl.hl.planner_policy import PlannerHighLevelPolicy
 from habitat_baselines.rl.hrl.hl.llm_policy import LLMHighLevelPolicy
 from habitat_baselines.rl.hrl.hl.vlm_policy import VLMPolicy
 from habitat_baselines.rl.hrl.hl.dummy_policy import DummyPolicy
+from habitat_baselines.rl.hrl.hl.pivot_policy import PivotPolicy
 __all__ = [
     "HighLevelPolicy",
     "FixedHighLevelPolicy",
@@ -13,4 +14,5 @@ __all__ = [
     "LLMHighLevelPolicy",
     "VLMPolicy",
     "DummyPolicy",
+    "PivotPolicy"
 ]

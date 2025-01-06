@@ -479,6 +479,7 @@ class HabitatBaselinesConfig(HabitatBaselinesBaseConfig):
     torch_gpu_id: int = 0
     tensorboard_dir: str = "tb"
     writer_type: str = "tb"
+    use_pivot: bool = False
     video_dir: str = "video_dir"
     image_dir: str = "video_dir/image_dir/"
     video_fps: int = 10

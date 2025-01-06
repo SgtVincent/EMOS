@@ -1,0 +1,119 @@
+# @package _global_
+
+defaults:
+  - /habitat: habitat_config_base
+  - /habitat/task: task_config_base
+
+  - /habitat/simulator/agents/habitat_mas_agents@habitat.simulator.agents.agent_0: FetchRobot_default
+
+  - /habitat/dataset/embodied_mas: dataset_manipulation
+  - /habitat/task/actions@habitat.task.actions.base_velocity: base_velocity
+  - /habitat/task/actions@habitat.task.actions.rearrange_stop: rearrange_stop
+  - /habitat/task/actions@habitat.task.actions.pddl_apply_action: pddl_apply_action
+  - /habitat/task/actions@habitat.task.actions.oracle_nav_coord_action: oracle_nav_coord_action
+  - /habitat/task/rearrange/vlm_actions@habitat.task.actions.pixel_nav_action: pixel_nav_action
+  - /habitat/task/rearrange/vlm_actions@habitat.task.actions.arm_pick_action: pixel_pick_action
+  - /habitat/task/rearrange/vlm_actions@habitat.task.actions.arm_place_action: pixel_place_action
+  - /habitat/task/actions@habitat.task.actions.arm_reset_action: arm_reset_action
+  - /habitat/task/actions@habitat.task.actions.wait: wait
+
+  - /habitat/task/measurements:
+    - pddl_success
+    - num_steps
+    - did_agents_collide
+    - num_agents_collide
+    - object_to_goal_distance
+    - composite_stage_goals
+    - pddl_subgoal_reward
+    - rearrange_cooperate_reward
+  - /habitat/task/lab_sensors:
+    - relative_resting_pos_sensor
+    - target_start_sensor
+    - goal_sensor
+    - joint_sensor
+    - is_holding_sensor
+    - object_to_goal_distance_sensor
+    - end_effector_sensor
+    - target_start_gps_compass_sensor
+    - target_goal_gps_compass_sensor
+    - localization_sensor
+    #- other_agent_gps
+    - detected_objects_sensor
+    - get_depth
+    - get_depth_rot
+    - get_depth_trans
+    - get_depth_project
+    - get_camera_matrix
+    - arm_workspace_rgb_sensor
+    - camera_info
+    # # - object_masks_sensor
+    # - nav_workspace_rgb_sensor
+    # - arm_workspace_points_sensor
+    # - nav_workspace_points_sensor
+    
+#  - /habitat/task/lab_sensors@habitat.task.lab_sensors.agents_within_threshold: agents_within_threshold
+  - _self_
+
+habitat:
+  task:
+#    lab_sensors:
+#      agent_0_agents_within_threshold:
+#        x_len: 2.0
+#        y_len: 1.5
+#        agent_idx: 0
+    type: RearrangePddlTask-v0
+    reward_measure: rearrange_cooperate_reward
+    success_measure: pddl_success
+    success_reward: 10.0
+    min_distance_start_agents: 5.0
+    slack_reward: -0.0005
+    end_on_success: True
+    constraint_violation_ends_episode: False
+    constraint_violation_drops_object: True
+    measurements:
+      pddl_success:
+        must_call_stop: False
+      rearrange_cooperate_reward:
+        stage_sparse_reward: 5.0
+        end_on_collide: True
+        collide_penalty: 0.5
+    task_spec_base_path: benchmark/single_agent/
+    task_spec: pddl/pddl_single_agent_man
+    pddl_domain_def: fp
+    robot_at_thresh: 1.0
+    obj_succ_thresh: 1.0
+    lab_sensors:
+      arm_workspace_rgb_sensor:
+        single_agent_eval_option: True
+
+
+  environment:
+    max_episode_steps: 1500
+  simulator:
+    type: RearrangeSim-v0
+    seed: 100
+    additional_object_paths:
+      - "data/objects/ycb/configs/"
+      - "data/objects/amazon_berkeley/configs/"
+      - "data/objects/google_object_dataset/configs/"
+    concur_render: True
+    auto_sleep: True
+    agents_order:
+      - agent_0
+
+    kinematic_mode: True
+    ac_freq_ratio: 1
+    step_physics: False
+
+    habitat_sim_v0:
+      allow_sliding: True
+      enable_physics: True
+    agents:
+      agent_0:
+        joint_start_noise: 0.0
+  dataset:
+    data_path: data/datasets/replica_cad/single_agent_eval.json.gz
+    # new
+    randomize_agent_start: 1
+    robot_config: data/robots/json/manipulation.json
+    mode: manipulation

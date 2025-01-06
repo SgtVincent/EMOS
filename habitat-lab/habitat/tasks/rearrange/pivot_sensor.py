@@ -52,7 +52,6 @@ class CameraInfoSensor(UsesArticulatedAgentInterface, Sensor):
             "camera_matrix": matrx4_to_list(camera_matrix),
             "projection_size": projection_size,
         }
-
         camera_info_str = json.dumps(camera_info)
         return camera_info_str
 

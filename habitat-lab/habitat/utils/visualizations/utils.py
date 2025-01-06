@@ -256,7 +256,7 @@ def observations_to_image(observation: Dict, info: Dict,
     #"has_finished_oracle_nav"
     matched_data = {key: value.tolist() for key, value in observation.items() if any(sub in key for sub in substrings)}
     unload_name = ["robot_trans_martix","oracle_nav_target_path","camera_extrinsic","obj_bounding_box","target_bounding_box","rec_bounding_box","depth_inf",
-    "depth_rot","depth_trans","arm_workspace_points"]
+    "depth_rot","depth_trans","arm_workspace_points","camera_matrix","depth_project","camera_info"]
     for sensor_name in observation:
         # if not arraylike, skip
         if not hasattr(observation[sensor_name], "shape"):

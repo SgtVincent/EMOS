@@ -15,6 +15,7 @@ def run_pivot(
     n_iters,
     n_parallel_trials,
     openai_api_key,
+    openai_base_url,
     camera_info,
 ):
     if not openai_api_key:
@@ -50,7 +51,7 @@ def run_pivot(
         'robot': None,
     }
 
-    vlm = GPT4V(openai_api_key=openai_api_key)
+    vlm = GPT4V(openai_api_key=openai_api_key,openai_base_url=openai_base_url)
 
     return pivot_runner(
         vlm,

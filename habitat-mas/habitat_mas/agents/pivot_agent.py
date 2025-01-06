@@ -8,6 +8,7 @@ import requests
 import time,random
 from PIL import Image
 from io import BytesIO
+import openai
 from openai import OpenAI
 from torchvision import transforms
 import torch
@@ -24,10 +25,6 @@ pivot_json_format_info = {
     "action_information":"If the action is \"nav_to_point\",\"pick\" or \"place\", the information format should be \"<box>[[x1, y1, x2, y2]]</box>\" to indicate location information,where x1, y1, x2, y2 are the coordinates of the bounding box;if the action is \"search_scene_frame\",the information format should be \"id\",where id is the value of the frame index you choose.",
     "summarization":"summarize based on the current action information and history."
 }
-def save_image(image, file_path):
-    from PIL import Image
-    img = Image.fromarray(image)
-    img.save(file_path)
 class PIVOTAgent:
     def __init__(self,**kwargs):
         self.robot_history = None
@@ -35,6 +32,7 @@ class PIVOTAgent:
         self.client = OpenAI(api_key='123', base_url='http://0.0.0.0:23333/v1')
         self.prepare_action_num = 3
         self.rgb_image_store_num = 0
+        self.debug_item = 1
         self.rag_image_name_list_set = [
 'target_rec.png', 'goal_rec.png',
 'random_scene_graph_2.png', 'random_scene_graph_3.png',
@@ -50,27 +48,6 @@ class PIVOTAgent:
                 }]
         self.use_pivot = True
 
-    def _init_model(self):
-        client = OpenAI(api_key='', base_url='http://0.0.0.0:23333/v1')
-        model_name = client.models.list().data[0].id
-        response = client.chat.completions.create(
-            model=model_name,
-            messages=[{
-                'role':
-                'user',
-                'content': [{
-                    'type': 'text',
-                    'text': 'describe this image',
-                }, {
-                    'type': 'image_url',
-                    'image_url': {
-                        'url':
-                        'https://modelscope.oss-cn-beijing.aliyuncs.com/resource/tiger.jpeg',
-                    },
-                }],
-            }],
-            temperature=0.8,
-            top_p=0.8)
     def _2d_to_3d_single_point(self, depth_obs, depth_rot,depth_trans,pixel_x, pixel_y):
         # depth_camera = self._sim._sensors[depth_name]._sensor_object.render_camera
 
@@ -181,9 +158,8 @@ Robot's Task: {task_prompt}{robot_history}Your output format should be in pure J
         content.append(robot_image_info)
         return content,rag_image_path_list
     def query_and_receive(self,content,client):
-        model_name = client.models.list().data[0].id
         response = client.chat.completions.create(
-            model=model_name,
+            model="gpt-4o",
             messages=[{
                 'role':'user',
                 'content': content
@@ -202,6 +178,18 @@ Robot's Task: {task_prompt}{robot_history}Your output format should be in pure J
         # point_3d_debug = point_3d_debug.tolist()
         # print("3:point_3d_debug",point_3d_debug)
         return point_3d_debug
+    def extract_gptoutput_to_json(self,input_string):
+        print("BEFORE_extract:",input_string)
+    # 定义正则表达式模式来匹配指定字段的内容
+        pattern = r'["\'](reasoning|action|action_information|summarization)["\']\s*:\s*["\'](.*?)["\'],'
+        
+        matches = re.findall(pattern, input_string)
+        
+        extracted_data = {field: value for field, value in matches}
+        
+        # new_json = json.dumps(extracted_data, ensure_ascii=False, indent=4)
+        
+        return extracted_data
     def process_action(self,action,action_information,data_path,observations,rgb_image_path_list):
         if action == "search_scene_frame":
             data_dir_path = os.path.dirname(data_path)
@@ -227,12 +215,9 @@ Robot's Task: {task_prompt}{robot_history}Your output format should be in pure J
                 }
             }
         if action == "nav_to_point":
-            action_bbox = json.loads(action_information)[0]
-            print("action_bbox:",action_bbox)
-            action_point = [int((action_bbox[0] + (action_bbox[2]/2.0))*512.0/1000.0),
-                            int((action_bbox[1] + (action_bbox[3]/2.0))*512.0/1000.0)]
+            print("ACTIONINFORMATION:",action_information)
             target_position = self.process_nav_point(observations['depth_obs'],
-                                                  observations['depth_rot'],observations['depth_trans'],action_point),
+                                                  observations['depth_rot'],observations['depth_trans'],action_information),
             print("target_position:",target_position)
             target_position = target_position[0]
             target_position = target_position.tolist()
@@ -244,13 +229,11 @@ Robot's Task: {task_prompt}{robot_history}Your output format should be in pure J
                 }
             }
         if (action == "pick") or (action == "place"):
-            action_bbox = json.loads(action_information)[0]
-            action_point = [int((action_bbox[0] + (action_bbox[2]/2.0))*512.0/1000.0),
-                            int((action_bbox[1] + (action_bbox[3]/2.0))*512.0/1000.0)]
+            print("ACTIONINFORMATION:",action_information)
             return {
                 "name": f"{action}_key_point",
                 "arguments": {
-                    "position": action_point,
+                    "position": action_information,
                     "robot": self.agent_name,
                 }
             }
@@ -260,7 +243,6 @@ Robot's Task: {task_prompt}{robot_history}Your output format should be in pure J
         }
     def process_vlm_output(self,data_path,vlm_output,rgb_image_path_list,observations,action_information=None):
         # print("vlm_output:",vlm_output)
-        vlm_output = json.loads(vlm_output.choices[0].message.content)
         print("vlm_output:",vlm_output)
         vlm_action = vlm_output['action']
         if self.use_pivot:
@@ -279,7 +261,7 @@ Robot's Task: {task_prompt}{robot_history}Your output format should be in pure J
             return self.prepare_action[2-action_num]
         self.prepare_action_num = 2
         #this is for action cycle(ensure reset&wait before and action)
-        robot_image = observations["arm_workspace_rgb"].cpu().numpy()
+        robot_image = observations["head_rgb"].cpu().numpy()
         # save_image(np.squeeze(robot_image.copy()),f"./eval_in_sim_info/{os.path.basename(os.path.dirname(data_path))}/robot_input_{self.rgb_image_store_num}.png")
         # print("robot_image:",robot_image.shape)
         self.rgb_image_store_num+=1
@@ -287,26 +269,51 @@ Robot's Task: {task_prompt}{robot_history}Your output format should be in pure J
         prompt = self.process_prompt(task_prompt,history = self.robot_history)
         content, rgb_image_path_list = self.process_message(data_path,robot_image,prompt)
         # print("query_content:",content)
-        vlm_output = self.query_and_receive(content,self.client)
-
+        openai.api_key = ""
+        openai.base_url = ""
+        vlm_output = self.query_and_receive(content,openai)
+        camera_info = {
+            'viewport': np.array([512, 512]),
+            'projection_matrix': np.array(observations['depth_project'].cpu()[0]), 
+            'camera_matrix': np.array(observations['camera_matrix'].cpu()[0]),
+            'projection_size': 2.0}
         # TODO: Query pivot
         if self.use_pivot:
-            text_vlm_output = vlm_output.choices[0].message.content
-            sampled_point = run_pivot(
-                            im=robot_image,
-                            query=text_vlm_output,
-                            n_samples_init=8,
-                            n_samples_opt=6,
-                            n_iters=2,
-                            n_parallel_trials=1,
-                            # TODO: Add openai key here
-                            openai_api_key=openai_key,
-                            camera_info=camera_info,
-                        )
+            openai_key = ""
+            openai_base_url = ""
+            text_vlm_output = self.extract_gptoutput_to_json(vlm_output.choices[0].message.content)
+            print("text_vlm_output:",text_vlm_output)
+            # if self.debug_item == 0:
+            #     text_vlm_output = {
+            #         'reasoning': "The robot's task is to move the cracker box from the Home library to the Central countertop. Based on the robot's history, it was previously directed to search in frame 2 to locate the cracker box. The current view (Image-9) show the cracker box, indicating that the robot needs to navigate closer to search for it.",
+            #         'action': 'nav_to_point', 
+            #         'action_information': '[[0,0,512,512]]', 
+            #         'summarization': 'The robot will nav closer to pick the cracker box.'
+            #         }
+            # if text_vlm_output["action"] == "search_scene_frame" and self.debug_item == 1:
+            #     action_information = text_vlm_output["action_information"]
+            #     self.debug_item = 0
+            if text_vlm_output["action"] == "search_scene_frame":
+                action_information = text_vlm_output["action_information"]
+            else:
+                text_vlm_output["task_prompt"] = task_prompt
+                text_vlm_output["robot_history"] = self.robot_history
+                action_information = run_pivot(
+                                im=np.squeeze(robot_image),
+                                query=text_vlm_output,
+                                n_samples_init=8,
+                                n_samples_opt=6,
+                                n_iters=2,
+                                n_parallel_trials=1,
+                                openai_api_key=openai_key,
+                                openai_base_url = openai_base_url,
+                                camera_info=camera_info,
+                            )
             vlm_return,self.robot_history = self.process_vlm_output(
-                data_path,vlm_output,rgb_image_path_list,observations,sampled_point
+                data_path,text_vlm_output,rgb_image_path_list,observations,action_information
             )
         else:
+            raise ValueError("Pivot is not implemented")
             vlm_return, self.robot_history = self.process_vlm_output(
                 data_path, vlm_output, rgb_image_path_list, observations,
             )

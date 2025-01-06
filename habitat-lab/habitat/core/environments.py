@@ -9,7 +9,7 @@ All environments here should be a (direct or indirect ) subclass of Env class
 in habitat. Customized environments should be registered using
 ``@habitat.registry.register_env(name="myEnv")` for reusability
 """
-
+from habitat.tasks.rearrange.rearrange_sim import RearrangeSim
 import importlib
 from typing import TYPE_CHECKING, Dict, Optional, Tuple, Type, Union
 

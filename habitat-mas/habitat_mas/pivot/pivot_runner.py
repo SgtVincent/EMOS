@@ -2,12 +2,22 @@
 
 import json
 import re
-
+import time
 import cv2
 import habitat_mas.pivot.pivot as pivot
-
-
+from PIL import Image
+from io import BytesIO
+def save_image(image, file_path):
+    img = Image.fromarray(image)
+    img.save(file_path)
+def process_description(gpt_output)->str:
+    action_name = gpt_output["action"]
+    task_prompt = gpt_output["task_prompt"]
+    robot_history = "" if not gpt_output["robot_history"] else f"Robot's history: {gpt_output['robot_history']}"
+    return f"""The robot need to {task_prompt}.Now the robot need to {action_name}.{robot_history}"""
+    
 def make_prompt(description, top_n=3):
+    gpt_prompt = process_description(description)
     return f"""
 INSTRUCTIONS:
 You are tasked to locate an object, region, or point in space in the given annotated image according to a description.
@@ -19,7 +29,7 @@ Provide your answer at the end in a valid JSON of this format:
 
 {{"points": []}}
 
-DESCRIPTION: {description}
+DESCRIPTION: {gpt_prompt}
 IMAGE:
 """.strip()
 
@@ -42,19 +52,23 @@ def pivot_perform_selection(prompter, vlm, im, desc, arm_coord, samples, camera_
     image_circles_np = prompter.add_arrow_overlay_plt(
         image=im, samples=samples, arm_xy=arm_coord, camera_info=camera_info
     )
+    #debug for image
+    
+    time_now = time.time()
     # Encode images and prompts
-    _, encoded_image_circles = cv2.imencode(".png", image_circles_np)
-    prompt_seq = [make_prompt(desc, top_n=top_n), encoded_image_circles]
+    # _, encoded_image_circles = cv2.imencode(".png", image_circles_np)
+    image_PIL = Image.fromarray(image_circles_np)
+    image_buffered = BytesIO()
+    image_PIL.save(image_buffered,format = 'PNG')
+    prompt_seq = [make_prompt(desc, top_n=top_n), image_buffered]
     response = vlm.query(prompt_seq)
     # Extract infomation from GPT outputs
     try:
         arrow_ids = extract_json(response, "points")
-        selected_action = extract_json(response, "action")
     except Exception as e:
         print(e)
         arrow_ids = []
-        selected_action = []
-    return arrow_ids, image_circles_np, selected_action
+    return arrow_ids, image_circles_np
 
 
 def pivot_runner(
@@ -100,8 +114,8 @@ def pivot_runner(
             # 1) Plot sampled coords into the image
             # 2) Call GPT to select points
             # 3) Extract selected ids and action from the json output
-            arrow_ids, image_circles_np. selected_action = pivot_perform_selection(
-                prompter, vlm, im, desc, arm_coord, samples, camera_info, top_n=1
+            arrow_ids, image_circles_np = pivot_perform_selection(
+                prompter, vlm, im, desc, arm_coord, samples, camera_info, top_n=3
             )
 
             # Plot selected circles as red
@@ -119,7 +133,7 @@ def pivot_runner(
             # If at last iteration, pick 1 answer out of the selected ones
             if itr == n_iters - 1:
                 # GPT select points and actions
-                arrow_ids, _, selected_action = pivot_perform_selection(
+                arrow_ids, _ = pivot_perform_selection(
                     prompter, vlm, im, desc, arm_coord, selected_samples, camera_info, top_n=1
                 )
 
@@ -136,5 +150,6 @@ def pivot_runner(
 
             # Fit the Gaussian distribution with the selected points
             center_mean, center_std = prompter.fit(arrow_ids, samples)
-
-    return selected_samples
+    xy_tuple = selected_samples[0].coord.xy
+    xy_list = list(xy_tuple)
+    return xy_list

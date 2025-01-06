@@ -939,6 +939,12 @@ class DepthRotSensorConfig(LabSensorConfig):
 class DepthTransSensorConfig(LabSensorConfig):
     type: str = "DepthTransSensor"
 @dataclass
+class DepthProjectionSensorConfig(LabSensorConfig):
+    type: str = "DepthProjectionSensor"
+@dataclass
+class CameraMatrixSensorConfig(LabSensorConfig):
+    type: str = "CameraMatrixSensor"
+@dataclass
 class TargetBBoxSenorConfig(LabSensorConfig):
     agent_idx: int = 0
     pixel_threshold: int = 10
@@ -2729,6 +2735,18 @@ cs.store(
     group="habitat/task/lab_sensors",
     name="get_depth_trans",
     node=DepthTransSensorConfig,
+)
+cs.store(
+    package="habitat.task.lab_sensors.get_depth_project",
+    group="habitat/task/lab_sensors",
+    name="get_depth_project",
+    node=DepthProjectionSensorConfig,
+)
+cs.store(
+    package="habitat.task.lab_sensors.get_camera_matrix",
+    group="habitat/task/lab_sensors",
+    name="get_camera_matrix",
+    node=CameraMatrixSensorConfig,
 )
 cs.store(
     package="habitat.task.lab_sensors.target_bbox_sensor",

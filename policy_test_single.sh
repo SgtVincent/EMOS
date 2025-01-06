@@ -1,10 +1,10 @@
 # bin/bash
 python -u -m habitat_baselines.run \
-    --config-name=single_rearrange/vlm_fetch.yaml \
+    --config-name=single_rearrange/test_fetch.yaml \
     habitat.dataset.data_path=data/datasets/sat_DLC_test10_dataset/image/80/scene_graph.gz \
-    habitat.seed=8888 \
-    habitat_baselines.image_dir="video_dir_test_pixel_action" \
-    habitat_baselines.video_dir="video_dir_test_pixel_action" \
+    habitat.seed=42 \
+    habitat_baselines.image_dir="video_dir_test_pivot" \
+    habitat_baselines.video_dir="video_dir_test_pivot" \
 #运行机制：habitat_mas_evaluator中调用agent.actor_critic.act执行，此处方法是HierarchicalPolicy的方法
 #HierarchicalPolicy的方法act中_update_skills()，分别对上下层的skill都进行更新
 #_update_skills()方法中self._high_level_policy.get_next_skill()调用着hl_xxx
