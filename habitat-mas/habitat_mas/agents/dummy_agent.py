@@ -12,8 +12,6 @@ from io import BytesIO
 from openai import OpenAI
 from torchvision import transforms
 import torch
-# API_KEY_NOW = "sk-EhvpORqZk2TCWk0xnBWXr8Lj3GCVQ7wr5pTJM2vXXaeHevCa"
-# API_ENDPOINT_NOW = "https://open.xiaojingai.com/v1/"
 json_format_info = {
     "reasoning":"Based on the current image information and history, think and infer the actions that need to be executed and action's information.",
     "action":"The action name of your reasoning result.",
